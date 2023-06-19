@@ -1,5 +1,12 @@
+# Data formats 
+*.db
+*.xlsx
+*.csv
+
+# Wierd files that exist every time i create a file
+*\~
+
 # Byte-compiled / optimized / DLL files
-.db
 __pycache__/
 *.py[cod]
 *$py.class
@@ -160,4 +167,3 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-.xlsx
