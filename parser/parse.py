@@ -24,6 +24,12 @@ def int_or_null(inp):
     except: 
         return None
 
+def float_or_null(inp):
+    try:
+        return float(inp)
+    except: 
+        return None
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
                     prog='Data Parser',
@@ -132,7 +138,7 @@ VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                   """, sqldata)
     
     for i in range(0,min(len(data_temp),rlimit)):
-        sqldata = (int_or_null(data_temp.get(i, "Temperature")),
+        sqldata = (float_or_null(data_temp.get(i, "Temperature")),
                    int_or_null(data_temp.get(i, "Decade")),
                    data_temp.get(i, "Region"))
 

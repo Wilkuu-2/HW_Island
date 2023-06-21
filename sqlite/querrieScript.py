@@ -1,10 +1,6 @@
 import sqlite3
 
-import serial
-import serial.tools.list_ports
-import sys
-import readline
-# import ../serialcomm
+import comms
 
 Countries = [(0, "Asia"),(1,"Americas"),(2,"Europe"),(3,"Africa")]
 Types = [(0,"Flood"),(1, "Drought"),(2, "Storm")]
@@ -18,111 +14,35 @@ def int_or_n1(num):
     except: 
         return -1
 
-def input_with_prefill(prompt, text):
-    def hook():
-        readline.insert_text(text)
-        readline.redisplay()
-    readline.set_pre_input_hook(hook)
-    result = input(prompt)
-    readline.set_pre_input_hook()
-    return result
+def get_data(ser):
+    dec = None 
+    dis = None 
+    uuid = None 
 
-class Serial:
+    while True:
+        l,v = ser.wait_for_line_val()
+        if l == 'a': 
+            dec = int_or_n1(v)
+            print(f"{dec=}")
+        elif l == 'b': 
+            dis = int_or_n1(v)
+            print(f"{dis=}")
+        elif l == 'c':
+            uuid = v
+            print(f"{uuid=}")
 
-    def __init__(self):
-        # set up connection
-        if sys.platform == 'windows' or sys.platform == 'cygwin':
-            self.serialInst = self.connectionWin()
-        else: 
-            self.serialInst = self.connectionLinux()
-
-    def connectionWin(self):
-        ports = serial.tools.list_ports.comports()
-        
-        if len(ports) < 1:
-            print("[Error] Could not find any serial devices... \nReconnect the arduino and try again.")
-            exit(1)
-
-        print("== Detected ports: ==")
-        for port in ports: 
-            print("-->\t", str(port.device))
-
-        comport = input_with_prefill("== Select Com port: ==\n> ", str(ports[0].device))
-
-        for x in range(0, len(portList)):
-            if portList[x].startswith('COM' + str(val)):
-                portVar = 'COM' + str(val)
-
-        ser = serial.serial()
-        ser.baudrate = 9600  # same as arduino
-        ser.timeout = 1
-        ser.port = comport
-        ser.open()
-        return ser
-
-
-    def connectionLinux(self):
-        ports = serial.tools.list_ports.comports()
-        
-        if len(ports) < 1:
-            print("[Error] Could not find any serial devices... \nReconnect the arduino and try again.")
-            exit(1)
-
-        print("== Detected ports: ==")
-        for port in ports: 
-            print("-->\t", str(port.device))
-        
-        path = input_with_prefill("== Give device path: ==\n> ", str(ports[0].device))
-        return serial.Serial(path,9600)
-
-    def get_data(self):
-        dec = None 
-        dis = None 
-
-        while True:
-            l,v = self.wait_for_line_val()
-            if l == 'a': 
-                dec = int_or_n1(v)
-                print(f"{dec=}")
-            elif l == 'b': 
-                dis = int_or_n1(v)
-                print(f"{dis=}")
-
-            if dec is not None and dis is not None: 
-                return dec,dis 
-                
-    def wait_for_line_val(self):
-        line = []
-        while True:
-             char = str(self.serialInst.read(1), 'utf-8')
-             if '\n' in char or '\r' in char:
-                 break
-             line.append(char)
-
-        if len(line) < 2:
-            return 'z', -1
-
-        try:
-            val = ''.join(line[1:])
-            label = line[0]
-        except:
-            return 'z', -1
-        
-        print(f"READ: {label=} , {val=}")
-        return label,val 
-    
-    def close(self):
-        self.serialInst.close()
+        if dec is not None and dis is not None and uuid is not None: 
+            return dec,dis, uuid
 
 if __name__ == "__main__":
     con = sqlite3.connect("emdat_public5.db")
     cur = con.cursor()
-    s = Serial()
+    s = comms.Serial(auto_id="input")
 
-    decade, disaster = s.get_data()
+    decade, disaster, uuid = get_data(s)
     if decade == -1  or disaster == -1:
         print("no_data")
-        s.get_data()
+        get_data(s)
 
     #print("input a decade(so 1900, tot 1980, 1990, 2000 or 2010")
     #x = input()
@@ -144,22 +64,20 @@ if __name__ == "__main__":
     print(f"{in_disaster}s from {in_year_start} to {in_year_end} in {in_continent}")
 
     res = cur.execute("""
-                      SELECT d.Year, c.continent, dt.type, AVG(d.Deaths), AVG(d.Injured), AVG(d.TotalCost) 
-                      FROM "Disaster" d, "Country" c, "DisasterTypes" dt, "Warming w" 
-                      WHERE d.ISO = c.ISO 
-                           AND dt.disasterTypeId = d.dtype_id 
-                           AND d.Year >= ?
+                      SELECT d.Year, c.continent, dt.type, AVG(d.Deaths), AVG(d.Injured), AVG(d.TotalCost), w.Temperature 
+                      FROM "Disaster" d
+                            INNER JOIN "DisasterTypes" AS dt ON dt.disasterTypeId = d.dtype_id
+                            INNER JOIN "Country" AS c ON d.ISO = c.ISO
+                            FULL OUTER JOIN Warming AS w ON w.Continent = c.Continent AND w.Decade BETWEEN d.Year -1  AND d.Year + 11
+                      WHERE d.Year >= ?
                            AND d.Year < ? 
                            AND c.Continent = ? 
                            AND dt.type = ? 
-                           AND w.decade BETWEEN ? AND ?   
                       """,
                       (str(in_year_start),
                        str(in_year_end),
                        str(in_continent),
-                       str(in_disaster),
-                       str(in_year_start),
-                       str(in_year_end)))
+                       str(in_disaster)))
 
           
     print(res.fetchall())
