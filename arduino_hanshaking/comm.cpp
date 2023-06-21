@@ -19,7 +19,7 @@
  * The Message struct is the base of the protocol:
  * function: {                 Sent Portion                }{Bookkeeping  }
  * var:      [label][content (c style string)              ](string lenght)
- * size:     <1byte><--------MAX_MESSAGE_LENGTH bytes------><----8byte---->
+ * size:     <1byte><--------MAX_MESSAGE_LENGTH bytes------><----2bytes--->
  *
  * example messages: 
  *           [t][Lorem ipsum\0] (12 bytes)
