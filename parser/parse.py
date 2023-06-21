@@ -30,23 +30,30 @@ if __name__ == "__main__":
                     description='Parses disaster data into a sqlite database file',
                     epilog='Part of Hybrid worlds project of 2023')
 
-    parser.add_argument("in_file", nargs=1, help="The CSV file used as the source")
+    parser.add_argument("in_disaster", nargs=1, help="The CSV file used as the source")
+    parser.add_argument("in_temperatures", nargs=1, help="The CSV file used as the source")
     parser.add_argument("out_file", nargs=1, help="The sqlite .db file result")
 
     args = vars(parser.parse_args())
     print(args)
 
-    data = None 
+    data_dis = None 
+    data_temp = None  
+    rlimit = 1_000_000
 
-    with open(args["in_file"][0], 'r') as f:
+    with open(args["in_disaster"][0], 'r') as f:
         input = list(csv.reader(f, delimiter=",", quotechar='"'))
-
-        rlimit = 20000
-
         top_row = input[:1][0] 
         print(top_row)
         rows = input[1:]
-        data = DataRows(top_row,rows)
+        data_dis = DataRows(top_row,rows)
+    
+    with open(args["in_temperatures"][0], 'r') as f:
+        input = list(csv.reader(f, delimiter=",", quotechar='"'))
+        top_row = input[:1][0] 
+        print(top_row)
+        rows = input[1:]
+        data_temp = DataRows(top_row,rows)
 
     pathstr = f"./{args['out_file'][0]}"
 
@@ -58,40 +65,50 @@ if __name__ == "__main__":
     db = sqlite3.connect(pathstr)
     
     c = db.cursor()
-    c.execute("""CREATE TABLE "DisasterData_InitialFilter"(
-    "Year"    INTEGER,
-    "DisasterType"    TEXT,
-    "DisasterSubtype"    TEXT,
-    "Country"    TEXT,
-    "ISO"    TEXT,
-    "Region"    TEXT,
-    "Continent"    TEXT,
-    "TotalDeaths"    INTEGER,
-    "NoInjured"        INTEGER,
-    "NoAffected"    INTEGER,
-    "NoHomeless"    INTEGER,
-    "TotalAffected"    INTEGER,
-    "ReconstructionCosts"    INTEGER,
-    "InsuredDamages"    INTEGER,
-    "TotalDamages"    INTEGER
-    )""")
+    c.executescript("""
 
-    for i in range(0,min(len(data),rlimit)):
-        sqldata = (int(data.get(i, "Year")), 
-                   data.get(i, "Disaster Type"),
-                   data.get(i, "Disaster Subtype"),
-                   data.get(i, "Country"),
-                   data.get(i, "ISO"),
-                   data.get(i, "Region"),
-                   data.get(i, "Continent"),
-                   int_or_null(data.get(i, "Total Deaths")),
-                   int_or_null(data.get(i, "No Injured")),
-                   int_or_null(data.get(i, "No Affected")),
-                   int_or_null(data.get(i, "No Homeless")),
-                   int_or_null(data.get(i, "Total Affected")),
-                   int_or_null(data.get(i, "Reconstruction Costs ('000 US$)")),
-                   int_or_null(data.get(i, "Insured Damages ('000 US$)")),
-                   int_or_null(data.get(i, "Total Damages ('000 US$)")),)
+    BEGIN; 
+    CREATE TABLE "DisasterData_InitialFilter"(
+        "Year"    INTEGER,
+        "DisasterType"    TEXT,
+        "DisasterSubtype"    TEXT,
+        "Country"    TEXT,
+        "ISO"    TEXT,
+        "Region"    TEXT,
+        "Continent"    TEXT,
+        "TotalDeaths"    INTEGER,
+        "NoInjured"        INTEGER,
+        "NoAffected"    INTEGER,
+        "NoHomeless"    INTEGER,
+        "TotalAffected"    INTEGER,
+        "ReconstructionCosts"    INTEGER,
+        "InsuredDamages"    INTEGER,
+        "TotalDamages"    INTEGER);
+    CREATE TABLE "Warming" (
+        Temperature	,
+        Decade	,
+        Continent, 
+        PRIMARY KEY(Continent,Decade)
+    );
+
+    COMMIT;""")
+
+    for i in range(0,min(len(data_dis),rlimit)):
+        sqldata = (int(data_dis.get(i, "Year")), 
+                   data_dis.get(i, "Disaster Type"),
+                   data_dis.get(i, "Disaster Subtype"),
+                   data_dis.get(i, "Country"),
+                   data_dis.get(i, "ISO"),
+                   data_dis.get(i, "Region"),
+                   data_dis.get(i, "Continent"),
+                   int_or_null(data_dis.get(i, "Total Deaths")),
+                   int_or_null(data_dis.get(i, "No Injured")),
+                   int_or_null(data_dis.get(i, "No Affected")),
+                   int_or_null(data_dis.get(i, "No Homeless")),
+                   int_or_null(data_dis.get(i, "Total Affected")),
+                   int_or_null(data_dis.get(i, "Reconstruction Costs ('000 US$)")),
+                   int_or_null(data_dis.get(i, "Insured Damages ('000 US$)")),
+                   int_or_null(data_dis.get(i, "Total Damages ('000 US$)")),)
 
         cl = db.cursor()
         c.execute("""
@@ -113,6 +130,21 @@ INSERT INTO "DisasterData_InitialFilter" (
     TotalDamages)
 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                   """, sqldata)
+    
+    for i in range(0,min(len(data_temp),rlimit)):
+        sqldata = (int_or_null(data_temp.get(i, "Temperature")),
+                   int_or_null(data_temp.get(i, "Decade")),
+                   data_temp.get(i, "Region"))
+
+        cl = db.cursor()
+        c.execute("""
+INSERT INTO Warming (
+    Temperature,
+    Decade,
+    Continent) 
+VALUES(?,?,?)
+                  """, sqldata)
+
 
     c.executescript("""
 BEGIN;

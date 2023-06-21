@@ -4,12 +4,19 @@ import serial
 import serial.tools.list_ports
 import sys
 import readline
+# import ../serialcomm
 
 Countries = [(0, "Asia"),(1,"Americas"),(2,"Europe"),(3,"Africa")]
 Types = [(0,"Flood"),(1, "Drought"),(2, "Storm")]
 Decades = [(0,1950),(1,1960),(2,1970),(3,1980),(4,1990),(5,2000),(6,2010)]
 
 
+
+def int_or_n1(num):
+    try: 
+        return int(num)
+    except: 
+        return -1
 
 def input_with_prefill(prompt, text):
     def hook():
@@ -19,12 +26,6 @@ def input_with_prefill(prompt, text):
     result = input(prompt)
     readline.set_pre_input_hook()
     return result
-
-def int_or_n1(num):
-    try: 
-        return int(num)
-    except: 
-        return -1
 
 class Serial:
 
@@ -37,6 +38,11 @@ class Serial:
 
     def connectionWin(self):
         ports = serial.tools.list_ports.comports()
+        
+        if len(ports) < 1:
+            print("[Error] Could not find any serial devices... \nReconnect the arduino and try again.")
+            exit(1)
+
         print("== Detected ports: ==")
         for port in ports: 
             print("-->\t", str(port.device))
@@ -54,8 +60,14 @@ class Serial:
         ser.open()
         return ser
 
+
     def connectionLinux(self):
         ports = serial.tools.list_ports.comports()
+        
+        if len(ports) < 1:
+            print("[Error] Could not find any serial devices... \nReconnect the arduino and try again.")
+            exit(1)
+
         print("== Detected ports: ==")
         for port in ports: 
             print("-->\t", str(port.device))
@@ -82,10 +94,13 @@ class Serial:
     def wait_for_line_val(self):
         line = []
         while True:
-             if len(line) and ('\n' in line[-1] or '\r' in line[-1]):
+             char = str(self.serialInst.read(1), 'utf-8')
+             if '\n' in char or '\r' in char:
                  break
-             
-             line.append(str(self.serialInst.read(1), 'utf-8'))
+             line.append(char)
+
+        if len(line) < 2:
+            return 'z', -1
 
         try:
             val = ''.join(line[1:])
@@ -100,7 +115,7 @@ class Serial:
         self.serialInst.close()
 
 if __name__ == "__main__":
-    con = sqlite3.connect("emdat_public3.db")
+    con = sqlite3.connect("emdat_public5.db")
     cur = con.cursor()
     s = Serial()
 
@@ -130,18 +145,21 @@ if __name__ == "__main__":
 
     res = cur.execute("""
                       SELECT d.Year, c.continent, dt.type, AVG(d.Deaths), AVG(d.Injured), AVG(d.TotalCost) 
-                      FROM Disaster d, Country c, DisasterTypes dt 
+                      FROM "Disaster" d, "Country" c, "DisasterTypes" dt, "Warming w" 
                       WHERE d.ISO = c.ISO 
                            AND dt.disasterTypeId = d.dtype_id 
                            AND d.Year >= ?
                            AND d.Year < ? 
                            AND c.Continent = ? 
                            AND dt.type = ? 
+                           AND w.decade BETWEEN ? AND ?   
                       """,
                       (str(in_year_start),
                        str(in_year_end),
                        str(in_continent),
-                       str(in_disaster)))
+                       str(in_disaster),
+                       str(in_year_start),
+                       str(in_year_end)))
 
           
     print(res.fetchall())
