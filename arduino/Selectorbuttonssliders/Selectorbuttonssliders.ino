@@ -5,7 +5,7 @@
 
    Tutorial page: https://arduinogetstarted.com/tutorials/arduino-rfid-nfc
 */
-
+#include "libs/comm.cpp"
 #include <SPI.h>
 #include <MFRC522.h>
 
@@ -28,15 +28,23 @@ void setup() {
   Serial.println("Tap RFID/NFC Tag on reader");
 }
 
+#define ID "input" 
+
 void loop() {
   // read the state of the pushbutton value:
   buttonState = digitalRead(2);
 
-  if (buttonState == LOW) {
+  if(Serial.available()){
+    Message m = wait_for_message();
+    handle_handshake(m, ID);
+  }
+  else if (buttonState == LOW) {
     digitalWrite(8, HIGH);
+    
     countrySelect();
     decadeSelect();
     disasterSelect();
+    
     delay(1000);
     buttonState = 0;
   }
@@ -47,35 +55,35 @@ void loop() {
 
 void decadeSelect() {
   int potentioVaulueDecades = analogRead(A2); //Selected decade
-  Serial.print("a");//Selected decade
-  Serial.println(map(potentioVaulueDecades, 0, 1023, -0.49, 5.49));
+  send_message(int_message('a',map(potentioVaulueDecades, 0, 1023, -0.49, 5.49)));
 }
 
 void disasterSelect() {
   int sliderValueDisaster = analogRead(A1); //Seleccted disaster
-  Serial.print("b"); //Type of Disaster
-//  Serial.println(sliderValueDisaster);
-  Serial.println(map(sliderValueDisaster, 582, 667, -0.49, 2.49));
+  send_message(int_message('b',map(sliderValueDisaster, 582, 667, -0.49, 2.49)));
 }
 
 void countrySelect() {
   //RFID TAG to select country
+  static byte last_uuid[64] = {0};
+  static int last_len = 0;
+  
   if (rfid.PICC_IsNewCardPresent()) { // new tag is available
     if (rfid.PICC_ReadCardSerial()) { // NUID has been readed
       MFRC522::PICC_Type piccType = rfid.PICC_GetType(rfid.uid.sak);
-      //Serial.print("RFID/NFC Tag Type: ");
-      //Serial.println(rfid.PICC_GetTypeName(piccType));
-
-      // print NUID in Serial Monitor in the hex format
-      Serial.print("UID:");
-      for (int i = 0; i < rfid.uid.size; i++) {
-        Serial.print(rfid.uid.uidByte[i] < 0x10 ? " 0" : " ");
-        Serial.print(rfid.uid.uidByte[i], HEX);
-      }
-      Serial.println();
-
-      rfid.PICC_HaltA(); // halt PICC
-      rfid.PCD_StopCrypto1(); // stop encryption on PCD
+      last_len = rfid.uid.size; 
+      memcpy(last_uuid,rfid.uid.uidByte, last_len);
     }
-  }
-}
+   }
+   
+   Message m = {0};
+   m.label = 'c';
+  
+   for (int i = 0; i < last_len; i++) {
+     sprintf(m.content + 3*i, " %02X", last_uuid );
+   }
+  
+
+   rfid.PICC_HaltA(); // halt PICC
+   rfid.PCD_StopCrypto1(); // stop encryption on PCD
+ }
