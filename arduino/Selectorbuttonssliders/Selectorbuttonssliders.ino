@@ -25,7 +25,7 @@ void setup() {
   // initialize the pushbutton pin as an input:
   pinMode(2, INPUT);
 
-  Serial.println("Tap RFID/NFC Tag on reader");
+  //Serial.println("Tap RFID/NFC Tag on reader");
 }
 
 #define ID "input" 
@@ -34,7 +34,7 @@ void loop() {
   // read the state of the pushbutton value:
   buttonState = digitalRead(2);
 
-  if(Serial.available()){
+  if(Serial.available() > 1){
     Message m = wait_for_message();
     handle_handshake(m, ID);
   }
@@ -80,9 +80,10 @@ void countrySelect() {
    m.label = 'c';
   
    for (int i = 0; i < last_len; i++) {
-     sprintf(m.content + 3*i, " %02X", last_uuid );
+     sprintf(m.content + 3*i, "%02X ", last_uuid[i] );
    }
-  
+
+   send_message(m);
 
    rfid.PICC_HaltA(); // halt PICC
    rfid.PCD_StopCrypto1(); // stop encryption on PCD
