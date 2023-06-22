@@ -5,6 +5,7 @@
 
 # Wierd files that exist every time i create a file
 *\~
+arduino/**/libs
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
