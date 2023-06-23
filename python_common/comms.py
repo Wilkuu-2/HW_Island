@@ -94,7 +94,7 @@ class Serial:
                 # Read until a handshake is found  
                 while True: 
                     self.send_message('A',"MST 0", ser=s)
-                    print(f"[AUTO_SEND] {port.device}: l=u, v={id}")
+                    print(f"[AUTO_SEND] {port.device}: l=A, v=MST 0")
                     l,v = self.wait_for_message(ser=s)
                     print(f"[AUTO_MESSAGE] {port.device}: {l=}, {v=} ")
                     if l == 'I':
@@ -136,6 +136,7 @@ class Serial:
         # Composes the line  
         line = []
         while True:
+             print(line)
              char = str(ser.read(1), 'utf-8')
              if char == '':
                  continue

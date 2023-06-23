@@ -46,11 +46,15 @@ void loop() {
   // Handle messages  
   if(Serial.available() > 1){
     Message m = wait_for_message();
-    handle_handshake(m, ID);
+    if (!handle_handshake(m, ID)){
+      if(m.label = 'X'){
+         buttonState = atoi(m.content) > 0;
+      }
+    }
   }
 
   // On activation 
-  else if (buttonState == LOW) {
+  if (buttonState == LOW) {
     digitalWrite(8, HIGH);
 
     // Sense and send inputs 

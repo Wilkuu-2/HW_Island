@@ -2,6 +2,7 @@
 from python_common import comms
 from python_common import database
 import argparse
+import time 
 import sqlite3
 
 # util function, might have to find a home somewhere else  
@@ -29,12 +30,12 @@ Decades = {0 : 1950,
 		   5 : 2000,
 		   6 : 2010}
 
-def map_safe(mdict,val): 
+def map_safe(mdict,val,default=None): 
     try: 
         return mdict[val] 
     except Exception as e: 
         print(f"[Map] Mapping failed: {e}")
-        return None
+        return default
 
 # Data getter function
 def get_data(ser):
@@ -81,13 +82,16 @@ if __name__ == "__main__":
     input_ser = comms.Serial(auto_id="input")
 
     while True: # Main loop 
+        input_ser.send_message('X',9999999)
+        time.sleep(0.2)
         decade, disaster, uuid = get_data(input_ser)
         in_disaster = map_safe(Types, disaster)
         in_decade = map_safe(Decades, decade)
-        in_continent = map_safe(Countries, uuid)
+        in_continent = map_safe(Countries, uuid, default = "Asia")
         
         data = database.query_data(con, in_disaster, in_decade, in_continent)
         print(f"[RPI]: {data=}")
+        time.sleep(5)
 
     input_ser.close()
         

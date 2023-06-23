@@ -21,7 +21,7 @@ def query_data(con, in_disaster, in_decade, in_continent):
                       FROM "Disaster" d
                             INNER JOIN "DisasterTypes" AS dt ON dt.disasterTypeId = d.dtype_id
                             INNER JOIN "Country" AS c ON d.ISO = c.ISO
-                            FULL OUTER JOIN Warming AS w ON w.Continent = c.Continent AND w.Decade BETWEEN d.Year -1  AND d.Year + 11
+                            INNER JOIN Warming AS w ON w.Continent = c.Continent AND w.Decade BETWEEN d.Year -1  AND d.Year + 11
                       WHERE d.Year >= ?
                            AND d.Year < ? 
                            AND c.Continent = ? 
