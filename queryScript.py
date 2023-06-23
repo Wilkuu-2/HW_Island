@@ -8,7 +8,7 @@
 # =======================================================*/
 
 import sqlite3
-import comms
+from python_common import comms
 
 # Mappings 
 Countries = [(0, "Asia"),(1,"Americas"),(2,"Europe"),(3,"Africa")]

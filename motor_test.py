@@ -1,5 +1,5 @@
 #!/usr/bin/env python3 
-import motor
+from python_common import motor
 import argparse
 from time import sleep
 
