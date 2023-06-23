@@ -78,6 +78,11 @@ class Serial:
 
         # Look trough all ports to find the one 
         for port in ports:
+
+            # Skip the RPI bluetooth/uart port
+            if port.device == "/dev/ttyAMA0": 
+                continue
+
             try:
                 # Create a serial socket  
                 s = serial.Serial()
