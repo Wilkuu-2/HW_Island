@@ -29,7 +29,6 @@ def input_with_prefill(prompt, text):
 
 # The serial class which is a wrapper around the pyserial Serial class 
 class Serial:
-
     # Set up connection 
     def __init__(self, auto_id=None):
         # set up connection
@@ -94,17 +93,23 @@ class Serial:
                 # Send hanshake
                 # Read until a handshake is found  
                 while True: 
-                    self.send_message('u',str(id), ser=s)
+                    self.send_message('A',"MST 0", ser=s)
                     print(f"[AUTO_SEND] {port.device}: l=u, v={id}")
                     l,v = self.wait_for_message(ser=s)
                     print(f"[AUTO_MESSAGE] {port.device}: {l=}, {v=} ")
-                    if l == 'i':
-                        if v == id: 
+                    if l == 'I':
+                        if v == id: # Arduino detection  
                             print(f"[AUTO] Port {port.device} is '{id}', target found. ")
                             return s
                         else:
                             print(f"[AUTO] Port {port.device} is not '{id}' but {v}, continuing. ")
                             break
+
+                    elif l == 'A': # Motor detection 
+                        print(f"[AUTO] Port {port.device} is a motor")
+                        if id == "_MOTOR":
+                            return s
+
                 s.close()
             except Exception as e: 
                 print(f"[AUTO] Port {port.device} could not be connected to:\n{e}")
