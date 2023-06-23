@@ -1,7 +1,8 @@
+#include <comm.h>
 #include <FastLED.h>
 #define LED_PIN 10
 #define NUM_LEDS 25
-#include "libs/comm.cpp"
+
 
 bool blinkstate = 0;
 CRGB leds[NUM_LEDS];

@@ -1,5 +1,5 @@
+#include <comm.h>
 #include <Stepper.h>
-#include "libs/comm.cpp"
 const int stepsPerRevolutions = 20;  // change this to fit the number of steps per revolution
 
 bool blinkstate = 0;

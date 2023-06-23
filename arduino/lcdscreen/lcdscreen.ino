@@ -1,5 +1,6 @@
+#include <comm.h>
 #include <LiquidCrystal_I2C.h>
-#include "libs/comm.cpp"
+
 
 bool blinkstate = 0;
 String name_and_temperature = " ";

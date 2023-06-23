@@ -1,7 +1,7 @@
 const int analogOutPin = 9;
 int startValue = 255;
 int stopValue = 0;
-#include "libs/comm.cpp"
+#include <comm.h>
 
 bool blinkstate = 0;
 
@@ -21,7 +21,7 @@ void loop() {
     if(!handle_handshake(m,ID)){
       int start_fan = atoi(m.content);
       if (start_fan > 0){
-        analogWrite(analogOutPin, outputValue);
+        analogWrite(analogOutPin, startValue);
         delay(5000);
         analogWrite(analogOutPin, stopValue);
       }

@@ -13,7 +13,7 @@
  * You may use the code under the terms of the MIT license
  *=======================================================*/
 
-#include "libs/comm.cpp"
+#include <comm.h>
 #include <SPI.h>
 #include <MFRC522.h>
 
