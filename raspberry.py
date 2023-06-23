@@ -74,6 +74,9 @@ if __name__ == "__main__":
                     epilog='Part of Hybrid worlds project of 2023')
 
     parser.add_argument("database", help="Database used in the installation")
+    parser.add_argument('-s', '--self_activate' , 
+            help="Sends an message to the input panel to emulate pressing the start button",
+            action='store_true')
     args = vars(parser.parse_args())
     print(f"[RPI] Starting with args: {args}")
     
@@ -82,8 +85,11 @@ if __name__ == "__main__":
     input_ser = comms.Serial(auto_id="input")
 
     while True: # Main loop 
-        input_ser.send_message('X',9999999)
-        time.sleep(0.2)
+        if args["self_activate"]:
+            time.sleep(5)
+            input_ser.send_message('X',9999999)
+            time.sleep(0.2)
+        
         decade, disaster, uuid = get_data(input_ser)
         in_disaster = map_safe(Types, disaster)
         in_decade = map_safe(Decades, decade)
@@ -91,7 +97,7 @@ if __name__ == "__main__":
         
         data = database.query_data(con, in_disaster, in_decade, in_continent)
         print(f"[RPI]: {data=}")
-        time.sleep(5)
+        
 
     input_ser.close()
         
