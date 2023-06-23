@@ -13,7 +13,7 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 }
 
-#define ID "input"
+#define ID "deaths"
 
 void loop() {
   if (Serial.available() > 0) { // check if data is available in the serial buffer

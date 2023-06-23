@@ -13,7 +13,7 @@ void setup() {
   Serial.begin(9600);
 }
 
-#define ID "input"
+#define ID "droughts"
 
 void loop() {
   int defaultGreen = 255;

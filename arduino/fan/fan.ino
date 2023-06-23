@@ -10,7 +10,7 @@ Serial.begin(9600);
 pinMode(LED_BUILTIN, OUTPUT);
 pinMode(analogOutPin, OUTPUT);
 }
-#define ID "input"
+#define ID "fan"
 
 void loop() {
 

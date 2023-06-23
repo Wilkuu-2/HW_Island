@@ -12,7 +12,7 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 }
 
-#define ID "input"
+#define ID "injuries"
 
 void loop() {
   if (Serial.available() > 0) {  // check if data is available in the serial buffer

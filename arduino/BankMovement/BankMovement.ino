@@ -16,7 +16,7 @@ void setup() {
   Serial.begin(9600);
   pinMode(LED_BUILTIN, OUTPUT);
 }
-#define ID "input"
+#define ID "bank"
 
 void loop() {
   // step one revolution  in one direction:

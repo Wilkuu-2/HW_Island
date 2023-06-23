@@ -20,7 +20,7 @@ void loop() {
     Message m  = wait_for_message();
 
     // Respond to the handshakes 
-    if(!handle_handshake(m,ID)){
+    if(!handle_handshake(m,"ledscreen")){
       name_and_temperature = m.content
       lcd.setCursor(0,1);
       lcd.print(name_and_temperature);
