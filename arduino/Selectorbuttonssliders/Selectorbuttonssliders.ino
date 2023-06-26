@@ -104,16 +104,16 @@ void loop() {
 
 // Potentiometer
 void decadeSelect() {
-  int potentioVaulueDecades = analogRead(A2); //Selected decade
-  Serial.println(potentioVaulueDecades);
+  int potentioVaulueDecades = analogRead(A1); //Selected decade
+  //Serial.println(potentioVaulueDecades);
   send_message(int_message('a',int(floor(potentioVaulueDecades/1023.0 * 6.0))));
 }
 
 // Slider 
 void disasterSelect() {
-  int sliderValueDisaster = analogRead(A1); //Seleccted disaster
-  Serial.println(sliderValueDisaster);
-  send_message(int_message('b',int(floor(sliderValueDisaster/1023.0 * 3.0))));
+  int sliderValueDisaster = analogRead(A2); //Seleccted disaster
+  //Serial.println(sliderValueDisaster);
+  send_message(int_message('b',int(floor(((sliderValueDisaster-800)/(1023.0-800)) * 3.0))));
 }
 
 // RFID 

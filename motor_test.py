@@ -23,7 +23,7 @@ if __name__ == "__main__":
         exit(1)
 
     try:
-        m = motor.Motor(args["serial_port"], int(args["baudrate"]))
+        m = motor.Motor.with_path(args["serial_port"], int(args["baudrate"]))
     except Exception as e:
         print("Unable to open motor interface:\n", e)
         exit(1)

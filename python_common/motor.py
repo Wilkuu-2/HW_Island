@@ -7,10 +7,14 @@ wait_time = 0.001
 brake_time = 1.0
 
 class Motor():
-    def __init__(self, serial_path,baudr):
-        self.ser =  Serial(serial_path,baudr)
+    def __init__(self, serial_object):
+        self.ser = serial_object
         self.stepSpeed = 12000
         self.stepTime = 0.5
+
+    @classmethod
+    def with_path(cls, serial_path,baudr):
+        return cls(Serial(serial_path,baudr))
 
     def setStep(self,t,v):
         self.stepTime = t
