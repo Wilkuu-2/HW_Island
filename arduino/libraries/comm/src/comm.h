@@ -39,7 +39,7 @@ struct Message{
 Message int_message(char label, int value){
   Message m = {0};
   m.label = label; 
-  sprintf(m.content, "%d", 2); // Print value in the buffer 
+  sprintf(m.content, "%d", value); // Print value in the buffer 
   m.mlen = strlen(m.content);  // Measure the resulting length
   return m; 
 }

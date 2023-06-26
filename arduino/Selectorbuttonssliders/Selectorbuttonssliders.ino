@@ -20,7 +20,12 @@
 #define SS_PIN 10
 #define RST_PIN 5
 
+
 MFRC522 rfid(SS_PIN, RST_PIN);
+
+    // Remeber what the last tag was
+byte last_uuid[8] = {0xde,0xad,0xbe,0xef,0x0,0x0,0x0,0x0}; // 64 bits max, our tags have 32 bits of output AFAIK
+int last_len = 4;        // Keep the length as well 
 
 int buttonState = 0;
 
@@ -34,6 +39,8 @@ void setup() {
 
   // initialize the pushbutton pin as an input:
   pinMode(2, INPUT);
+  pinMode(A2, INPUT);
+  pinMode(A1, INPUT);
 
 }
 
@@ -47,7 +54,7 @@ void loop() {
   if(Serial.available() > 1){
     Message m = wait_for_message();
     if (!handle_handshake(m, ID)){
-      if(m.label = 'X'){
+      if(m.label == 'X'){
          buttonState = atoi(m.content) > 0;
       }
     }
@@ -70,26 +77,6 @@ void loop() {
   else if (buttonState == HIGH) {
     digitalWrite(8, LOW);
   }
-}
-
-// Potentiometer
-void decadeSelect() {
-  int potentioVaulueDecades = analogRead(A2); //Selected decade
-  send_message(int_message('a',map(potentioVaulueDecades, 0, 1023, -0.49, 5.49)));
-}
-
-// Slider 
-void disasterSelect() {
-  int sliderValueDisaster = analogRead(A1); //Seleccted disaster
-  send_message(int_message('b',map(sliderValueDisaster, 582, 667, -0.49, 2.49)));
-}
-
-// RFID 
-void countrySelect() {
-
-  // Remeber what the last tag was
-  static byte last_uuid[8] = {0}; // 64 bits max, our tags have 32 bits of output AFAIK
-  static int last_len = 0;        // Keep the length as well 
 
   // Read the tag when available
   // TODO: It might be beneficial for the reliability of this to wait here instead of just checking
@@ -98,7 +85,7 @@ void countrySelect() {
   if (rfid.PICC_IsNewCardPresent()) { // new tag is available
     // TODO: See above 
     if (rfid.PICC_ReadCardSerial()) { // NUID has been read 
-
+      Serial.println("Found card");
       // What does this do? {! Compiles without !}
       MFRC522::PICC_Type piccType = rfid.PICC_GetType(rfid.uid.sak);
 
@@ -107,6 +94,30 @@ void countrySelect() {
       memcpy(last_uuid,rfid.uid.uidByte, last_len);
     }
    }
+   // TODO: Determine if this halting and stopping has to be done periodically
+   //       Do we need to do this every time a new card is detected?
+   //       It might be beneficial to read the card state in loop, since we already store state (semi)globally 
+   
+   rfid.PICC_HaltA(); // halt PICC
+   rfid.PCD_StopCrypto1(); // stop encryption on PCD
+}
+
+// Potentiometer
+void decadeSelect() {
+  int potentioVaulueDecades = analogRead(A2); //Selected decade
+  Serial.println(potentioVaulueDecades);
+  send_message(int_message('a',int(floor(potentioVaulueDecades/1023.0 * 6.0))));
+}
+
+// Slider 
+void disasterSelect() {
+  int sliderValueDisaster = analogRead(A1); //Seleccted disaster
+  Serial.println(sliderValueDisaster);
+  send_message(int_message('b',int(floor(sliderValueDisaster/1023.0 * 3.0))));
+}
+
+// RFID 
+void countrySelect() {
    
    Message m = {0};
    m.label = 'c';
@@ -120,10 +131,4 @@ void countrySelect() {
 
    send_message(m);
 
-   // TODO: Determine if this halting and stopping has to be done periodically
-   //       Do we need to do this every time a new card is detected?
-   //       It might be beneficial to read the card state in loop, since we already store state (semi)globally 
-   
-   rfid.PICC_HaltA(); // halt PICC
-   rfid.PCD_StopCrypto1(); // stop encryption on PCD
  }
