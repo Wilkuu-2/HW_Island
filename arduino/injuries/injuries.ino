@@ -4,7 +4,8 @@
 #define NUM_LEDS 15
 
 
-bool blinkstate = 0 : CRGB leds[NUM_LEDS];
+bool blinkstate = 0;
+CRGB leds[NUM_LEDS];
 
 void setup() {
   FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, NUM_LEDS);
@@ -42,7 +43,7 @@ void loop() {
     }
   } else {
     blinkstate = !blinkstate;
-    digitalWrite(LED_BUILTIN, blinkstate)
+    digitalWrite(LED_BUILTIN, blinkstate);
     delay(200);
   }
 }

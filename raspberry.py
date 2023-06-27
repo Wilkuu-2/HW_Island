@@ -24,9 +24,9 @@ Countries = {'0': "Asia",
              '2': "Europe",
              '3': "Africa"}
 
-Types = {0: "Flood",
-		 1: "Drought",
-		 2: "Storm"}
+Types = {0: "Drought",
+		 1: "Storm",
+		 2: "Flood"}
 
 Decades = {0 : 1950,
 		   1 : 1960,
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     while True: # Main loop 
         if args["self_activate"]:
             time.sleep(5)
-            connections["input"].send_message('X',9999999)
+            connections["input"].send_message('X',999)
             time.sleep(0.2)
         
         decade, disaster, uuid = get_data(connections["input"])
@@ -140,34 +140,40 @@ if __name__ == "__main__":
 
 
         wait_time = 5 
-        if in_disaster == "Flood" && "_MOTOR" in connections:
-            speed = 1000
-            turn_time = 0.5
-            connections["_MOTOR"].sendList([f"ROR 0, {speed}",
-                                            f"sleep {turn_time}",
-                                            "MST 0"])
+        print("_MOTOR" in connections)
+        if in_disaster == "Flood" and "_MOTOR" in connections:
+            position = 100000
+            turn_time = 1.5
+            print("[Motor] START")
+            connections["_MOTOR"].sendCMD("MST 0")
+            connections["_MOTOR"].sendCMD(f"ROR 0,{position}")
+            time.sleep(turn_time)
+            connections["_MOTOR"].sendCMD("MST 0")
 
-            set_stats(connections,data[3],data[4],data[5]):
+            print("[Motor] STOP")
+            set_stats(connections,data[3],data[4],data[5])
             time.sleep(wait_time)
-            set_stats(connections,0,0,0):
+            set_stats(connections,0,0,0)
 
-            connections["_MOTOR"].sendList([f"ROL 0, {speed}",
-                                            f"sleep {turn_time}",
-                                            "MST 0"])
+            print("[Motor] START")
+            connections["_MOTOR"].sendCMD(f"ROL 0,{position}")
+            time.sleep(turn_time)
+            connections["_MOTOR"].sendCMD("MST 0"),
+            print("[Motor] STOP")
 
-        elif in_disaster == "Drought" && "drought" in connections:
-            connections["drought"].send_message('a',str(999999999)) 
-            set_stats(connections,data[3],data[4],data[5]):
+        elif in_disaster == "Drought" and "drought" in connections:
+            connections["drought"].send_message('a',str(999)) 
+            set_stats(connections,data[3],data[4],data[5])
             time.sleep(wait_time)
-            set_stats(connections,0,0,0):
+            set_stats(connections,0,0,0)
             connections["drought"].send_message('a',str(0)) 
         
 
-        elif in_disaster == "Storm" && "fan" in connections:
-            connections["fan"].send_message('a',str(999999999)) 
-            set_stats(connections,data[3],data[4],data[5]):
+        elif in_disaster == "Storm" and "fan" in connections:
+            connections["fan"].send_message('a',str(999)) 
+            set_stats(connections,data[3],data[4],data[5])
             time.sleep(wait_time)
-            set_stats(connections,0,0,0):
+            set_stats(connections,0,0,0)
             connections["fan"].send_message('a',str(0)) 
 
         #TODO: Country indication? 

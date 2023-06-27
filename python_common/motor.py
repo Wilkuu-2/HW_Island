@@ -13,7 +13,7 @@ class Motor():
         self.stepTime = 0.5
 
     @classmethod
-    def with_path(cls, serial_path,baudr):
+    def from_path(cls, serial_path,baudr):
         return cls(Serial(serial_path,baudr))
 
     def setStep(self,t,v):
@@ -23,7 +23,7 @@ class Motor():
     def sendCMD(self,cmd):
         self.ser.write(f"A{cmd}\r".encode(encoding='ascii',errors='ignore'))
         sleep(wait_time)
-        print(self.ser.read_all())
+        print(f"A{cmd}\\r => {self.ser.read_all()}")
 
     def step(self):
         self.sendCMD(f"ROR 0, {self.stepSpeed}")
@@ -33,7 +33,7 @@ class Motor():
 
     def sendList(self,cmdList):
         for cmd in cmdList:
-            if cmd.contains("sleep"):
+            if "sleep" in cmd:
                 time = re.match("\\d*\\.\\d*",cmd)
                 if time:
                     sleep(float(time[0]))

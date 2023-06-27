@@ -51,7 +51,7 @@ void loop() {
   buttonState = digitalRead(2);
 
   // Handle messages  
-  if(Serial.available() > 1){
+  if(Serial.available() > 0){
     Message m = wait_for_message();
     if (!handle_handshake(m, ID)){
       if(m.label == 'X'){
@@ -93,13 +93,10 @@ void loop() {
       last_len = rfid.uid.size; 
       memcpy(last_uuid,rfid.uid.uidByte, last_len);
     }
+      rfid.PICC_HaltA(); // halt PICC
+      rfid.PCD_StopCrypto1(); // stop encryption on PCD
    }
-   // TODO: Determine if this halting and stopping has to be done periodically
-   //       Do we need to do this every time a new card is detected?
-   //       It might be beneficial to read the card state in loop, since we already store state (semi)globally 
-   
-   rfid.PICC_HaltA(); // halt PICC
-   rfid.PCD_StopCrypto1(); // stop encryption on PCD
+
 }
 
 // Potentiometer
@@ -112,8 +109,15 @@ void decadeSelect() {
 // Slider 
 void disasterSelect() {
   int sliderValueDisaster = analogRead(A2); //Seleccted disaster
-  //Serial.println(sliderValueDisaster);
-  send_message(int_message('b',int(floor(((sliderValueDisaster-800)/(1023.0-800)) * 3.0))));
+  Serial.println(sliderValueDisaster);
+  int index = 0;
+  if(sliderValueDisaster > 980){
+    index = 2;
+  }
+  else if(sliderValueDisaster > 900){
+    index = 1; 
+  }
+  send_message(int_message('b',index));
 }
 
 // RFID 

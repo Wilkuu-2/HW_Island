@@ -1,10 +1,12 @@
 #include <comm.h>
 #include <Stepper.h>
-const int stepsPerRevolutions = 20;  // change this to fit the number of steps per revolution
+const int stepsPerRevolution = 20;  // change this to fit the number of steps per revolution
 
 bool blinkstate = 0;
 int inMessage;
 // for your motor
+
+void stepper_movement(int);
 
 // initialize the stepper library on pins 8 through 11:
 Stepper myStepper(stepsPerRevolution, 8, 9, 10, 11);
@@ -20,7 +22,7 @@ void setup() {
 
 void loop() {
   // step one revolution  in one direction:
-   if(Serial.available()){
+   if(Serial.available() > 0){
     Message m  = wait_for_message();
 
     // Respond to the handshakes 
@@ -47,5 +49,4 @@ void stepper_movement(int steps){
    myStepper.step(steps);
    delay(5000);
    myStepper.step(-steps);
-
 }

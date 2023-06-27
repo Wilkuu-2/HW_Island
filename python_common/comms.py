@@ -11,8 +11,9 @@ print("[LIB] Comm serial protocol")
 
 import serial
 import serial.tools.list_ports
-import motor
+from python_common import motor
 import sys
+import time
 import readline
 
 
@@ -31,7 +32,7 @@ def input_with_prefill(prompt, text):
 # The serial class which is a wrapper around the pyserial Serial class 
 class Serial:
     # Set up connection 
-    def __init__(self, auto_id=None, path=None):
+    def __init__(self, path=None):
         # set up connection
         if path is not None:
             try:
@@ -42,8 +43,6 @@ class Serial:
                 self.serialInst.open()
             except: 
                 self.serialInst = None
-        elif auto_id is not None:
-            self.serialInst = self.connectionAuto(auto_id)
         else: 
             self.serialInst = self.connectionInteractive()
 
@@ -73,60 +72,6 @@ class Serial:
         ser.open()
         return ser
 
-    def connectionAuto(self, id):
-        ports = serial.tools.list_ports.comports()
-        
-        print("== Detected ports: ==")
-        for port in ports: 
-            print("-->\t", str(port.device))
-        
-        # Handle no devices being connected
-        if len(ports) < 1:
-            print("[Error] Could not find any serial devices... \nReconnect the arduino and try again.")
-            return None
-
-        # Look trough all ports to find the one 
-        for port in ports:
-
-            # Skip the RPI bluetooth/uart port
-            if port.device == "/dev/ttyAMA0": 
-                continue
-
-            try:
-                # Create a serial socket  
-                s = serial.Serial()
-                s.port=port.device
-                s.baudrate=9600
-                s.timeout=1
-                s.open()
-                
-                # Send hanshake
-                # Read until a handshake is found  
-                while True: 
-                    self.send_message('A',"MST 0", ser=s)
-                    print(f"[AUTO_SEND] {port.device}: l=A, v=MST 0")
-                    l,v = self.wait_for_message(ser=s)
-                    print(f"[AUTO_MESSAGE] {port.device}: {l=}, {v=} ")
-                    if l == 'I':
-                        if v == id: # Arduino detection  
-                            print(f"[AUTO] Port {port.device} is '{id}', target found. ")
-                            return s
-                        else:
-                            print(f"[AUTO] Port {port.device} is not '{id}' but {v}, continuing. ")
-                            break
-
-                    elif l == 'A': # Motor detection 
-                        print(f"[AUTO] Port {port.device} is a motor")
-                        if id == "_MOTOR":
-                            return s
-
-                s.close()
-            except Exception as e: 
-                print(f"[AUTO] Port {port.device} could not be connected to:\n{e}")
-                s.close()
-        
-        print(f"[AUTO] No working ports with id of '{id}'")
-        return None
     @classmethod
     def scan_all(cls):
         ports = serial.tools.list_ports.comports()
@@ -141,8 +86,8 @@ class Serial:
             return None
 
         # Look trough all ports to find the one 
+        ids = {}
         for port in ports:
-            ids = {}
             # Skip the RPI bluetooth/uart port
             if port.device == "/dev/ttyAMA0": 
                 continue
@@ -158,18 +103,20 @@ class Serial:
                 # Send hanshake
                 # Read until a handshake is found  
                 while True: 
-                    cls.send_message(None,'A',"MST 0", ser=s)
                     print(f"[SCAN_SEND] {port.device}: l=A, v=MST 0")
-                    l,v = cls.wait_for_message(None,ser=s)
+                    cls.send_message(None,'A',"MST 0", ser=s)
+
+                    l,v = cls.wait_for_message(None,ser=s, timeout=100000)
                     print(f"[SCAN_MESSAGE] {port.device}: {l=}, {v=} ")
                     if l == 'I':
                         print(f"[SCAN] Port {port.device} is an arduino device: {v}")
                         ids[v] = port.device
                         break
 
-                    elif l == 'A': # Motor detection 
+                    elif l == 'B': # Motor detection 
                         print(f"[SCAN] Port {port.device} is a motor")
                         ids["_MOTOR"] = port.device
+                        print(ids)
                         break
 
                 s.close()
@@ -185,6 +132,7 @@ class Serial:
         conns = {}
         for id, port in ids.items():
             if id == "_MOTOR":
+                print("[CONN] Found motor")
                 conns[id] = motor.Motor.from_path(port,9600)
             else:
                 conns[id] = cls(path=port) 
@@ -201,27 +149,33 @@ class Serial:
             ser = self.serialInst
 
         # Write message 
-        ser.write(f"{label}{value}\r\n".encode(encoding='ascii', errors='replace'))
+        ser.write(f"{label}{value}\r".encode(encoding='ascii', errors='replace'))
+        print(f"[WRITE] {label}{value}\\r")
         
 
     # Reads the message, byte by byte 
-    def wait_for_message(self, ser=None):
+    def wait_for_message(self, ser=None, timeout=-1):
         # Optional serial override, used for discovery
         if ser is None: 
             ser = self.serialInst
 
         # Composes the line  
         line = []
+        end_time = time.time_ns() + (timeout * 1000) 
         while True:
              char = str(ser.read(1), 'utf-8')
+             if timeout > 0 and time.time_ns() > end_time:
+                 return 'y', -1
+
              if char == '':
-                 continue
+                continue
 
              # Line break and carriage return are the breaking characters in this protocol
              if '\n' in char or '\r' in char:
                  break
             
              line.append(char)
+             
              print(f"[SERIAL]: '{''.join(line)}'", end='\r')
 
         # Return z-message for stray breaking characters 

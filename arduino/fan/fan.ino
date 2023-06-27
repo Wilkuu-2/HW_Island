@@ -7,6 +7,7 @@ bool blinkstate = 0;
 
 void setup() {
 Serial.begin(9600);
+
 pinMode(LED_BUILTIN, OUTPUT);
 pinMode(analogOutPin, OUTPUT);
 }
@@ -14,8 +15,9 @@ pinMode(analogOutPin, OUTPUT);
 
 void loop() {
 
-  if(Serial.available()){
-    Message m  = wait_for_message();
+  if(Serial.available() > 0){
+    Message m = wait_for_message();
+    //Serial.println(m.label);
 
     // Respond to the handshakes 
     if(!handle_handshake(m,ID)){
