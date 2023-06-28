@@ -28,13 +28,10 @@ Types = {0: "Drought",
 		 1: "Storm",
 		 2: "Flood"}
 
-Decades = {0 : 1950,
-		   1 : 1960,
-		   2 : 1970,
-		   3 : 1980,
-		   4 : 1990,
-		   5 : 2000,
-		   6 : 2010}
+Decades = {0 : 1980,
+		   1 : 1990,
+		   2 : 2000,
+		   3 : 2010},
 
 def map_safe(mdict,val,default=None): 
     try: 
@@ -45,7 +42,7 @@ def map_safe(mdict,val,default=None):
 
 def mapint(i_min, i_max,value,o_min=0,o_max=1023):
     # map function for arduinos
-    return ((value - i_min) / i_max) * (o_max - o_min) + o_min 
+    return int(ceil(((value - i_min) / i_max) * (o_max - o_min) + o_min ))
 
 # Data getter function
 def get_data(ser):

@@ -12,7 +12,7 @@ def query_data(con, in_disaster, in_decade, in_continent):
     cur = con.cursor()
 
     # Map the values 
-    in_year_end = in_decade + 10 
+    in_year_end = in_decade + 9 
     # Debug
     print(f"[QUERY] {in_disaster}s from {in_decade} to {in_year_end} in {in_continent}")
 
