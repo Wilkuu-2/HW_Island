@@ -121,7 +121,7 @@ Message wait_for_message(){
 
 // Handshake
 // Responds to hanshake requests and returns true if the request was a handshake request
-bool handle_handshake(Message m, const char * id){
+bool handle_handshake(Message m, char * id){
     if(m.label == 'A'){
         send_message(cstr_message('I',id));
         return true; 
