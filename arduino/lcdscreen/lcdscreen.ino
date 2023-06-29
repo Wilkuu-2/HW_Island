@@ -10,9 +10,10 @@ void setup() {
 lcd.init();
 lcd.backlight();
 lcd.setCursor(0, 0);
-lcd.print("The mean temperature for ");
+lcd.print("The average");
 lcd.setCursor(0,1);
-lcd.print(name_and_temperature);
+lcd.print("temp is ");
+Serial.begin(9600);
 
 }
 void loop() {
@@ -21,9 +22,9 @@ void loop() {
 
     // Respond to the handshakes 
     if(!handle_handshake(m,"ledscreen")){
-      name_and_temperature = m.content
+      name_and_temperature = m.content;
       lcd.setCursor(0,1);
-      lcd.print(name_and_temperature);
+      lcd.print("temp is " + name_and_temperature);
       send_message(m);
     }
   } else {
