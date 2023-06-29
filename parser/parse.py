@@ -100,13 +100,22 @@ if __name__ == "__main__":
     COMMIT;""")
 
     for i in range(0,min(len(data_dis),rlimit)):
+        region = data_dis.get(i,"Region")
+        continent = data_dis.get(i,"Continent")
+
+        if region in ["Northern America","Caribbean","Central America"]:
+            continent = "NorthAmerica"
+        elif region in ["South America"]:
+            continent = "SouthAmerica"
+            
+
         sqldata = (int(data_dis.get(i, "Year")), 
                    data_dis.get(i, "Disaster Type"),
                    data_dis.get(i, "Disaster Subtype"),
                    data_dis.get(i, "Country"),
                    data_dis.get(i, "ISO"),
                    data_dis.get(i, "Region"),
-                   data_dis.get(i, "Continent"),
+                   continent,
                    int_or_null(data_dis.get(i, "Total Deaths")),
                    int_or_null(data_dis.get(i, "No Injured")),
                    int_or_null(data_dis.get(i, "No Affected")),

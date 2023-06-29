@@ -1,14 +1,14 @@
 #include <FastLED.h>
 #include <comm.h>
 #define LED_PIN_DEATHS 10
-#define NUM_LEDS_DEATHS 200
+#define NUM_LEDS_DEATHS 150
 
 
 
 #define ID "deaths"
 bool deaths_changed = false;
 int death_value = 0;
-bool indicator = false;
+bool indicator = qfalse;
 const int max_value = 255;
 const int min_value = 0;
 unsigned long start_time = 0;

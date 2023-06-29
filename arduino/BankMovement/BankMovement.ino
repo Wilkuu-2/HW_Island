@@ -1,18 +1,38 @@
 #include <comm.h>
 #include <Stepper.h>
-const int stepsPerRevolution = 20;  // change this to fit the number of steps per revolution
+const int stepsPerRevolution = 200;  // change this to fit the number of steps per revolution
 
+int position = 0; 
 bool blinkstate = 0;
 int inMessage;
 // for your motor
+// 21 on pinion, 24 gear 
+const int n_pinion = 21;
+const int n_gear = 24;
+const int steps_range = n_pinion * stepsPerRevolution / n_gear;
 
 void stepper_movement(int);
 
+
+
 // initialize the stepper library on pins 8 through 11:
-Stepper myStepper(stepsPerRevolution, 8, 9, 10, 11);
+Stepper myStepper(stepsPerRevolution, 4, 5, 6, 7);
+
+void move_to(int pos){
+  Serial.print('l');
+  Serial.print(pos);
+  Serial.print(' ');
+  Serial.print(position);
+  Serial.print(' ');
+  Serial.print(pos-position);
+  
+  myStepper.step(pos-position);
+  position = pos; 
+  
+}
 
 void setup() {
-  // set the speed at 60 rpm:
+  // set the speed at 60 steps/sec:
   myStepper.setSpeed(60);
   // initialize the serial port:
   Serial.begin(9600);
@@ -27,13 +47,11 @@ void loop() {
 
     // Respond to the handshakes 
     if(!handle_handshake(m,ID)){
-      inMessage = atoi(m.content);
-      if(inMessage = 1){
-        stepper_movement(stepsPerRevolution);
+      if (m.label = 'a'){
+        int pos = steps_range - int(map(atoi(m.content),0, 1024, 0, steps_range));
+        move_to(pos);
       }
-      else if(inMessage = 2){
-        stepper_movement(-stepsPerRevolution);
-      }
+      
        // Respond to anything else
        send_message(m);
     }
@@ -43,10 +61,4 @@ void loop() {
     digitalWrite(LED_BUILTIN, blinkstate);
     delay(200);  
   }
-}
-
-void stepper_movement(int steps){
-   myStepper.step(steps);
-   delay(5000);
-   myStepper.step(-steps);
 }

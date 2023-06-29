@@ -37,7 +37,7 @@ if __name__ == "__main__":
         m.sendCMD("MST 0")
         sleep(1)
 
-        m.sendCMD("ROR 0, 50000")
+        m.sendCMD("ROL 0, 50000")
         sleep(1)
 
         iterc += 1

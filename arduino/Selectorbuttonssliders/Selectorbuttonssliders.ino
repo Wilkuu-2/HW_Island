@@ -103,7 +103,7 @@ void loop() {
 void decadeSelect() {
   int potentioVaulueDecades = analogRead(A1); //Selected decade
   //Serial.println(potentioVaulueDecades);
-  send_message(int_message('a',int(floor(potentioVaulueDecades/1023.0 * 6.0))));
+  send_message(int_message('a',int(floor(potentioVaulueDecades/1023.0 * 3.0))));
 }
 
 // Slider 
