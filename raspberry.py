@@ -14,10 +14,14 @@ def play_disaster_news(disaster,decade,continent,block=True):
         if continent == "Americas":
             continent = "NorthAmerica"
         playsound(f"{SOUNDS_PATH}{decade}s/{continent}{disaster}s{decade}.wav",block=block)
+    else: 
+        time.sleep(10)
 
 def play_disaster_sounds(disaster,block=True):
     if SOUND_EN: 
         playsound(f"{SOUNDS_PATH}/disaster sfx/{disaster.lower()}_final.wav",block=block)
+    else:
+        time.sleep(5)
     
 
 # util function, might have to find a home somewhere else  
@@ -58,7 +62,7 @@ def map_safe(mdict,val,default=None):
 
 def mapint(i_min, i_max,value,o_min=0,o_max=1023):
     # map function for arduinos
-    return int(ceil(((value - i_min) / i_max) * (o_max - o_min) + o_min ))
+    return int(((value - i_min) / i_max) * (o_max - o_min) + o_min )
 
 # Data getter function
 def get_data(ser):
@@ -90,7 +94,7 @@ def get_data(ser):
 
 def list_connected_outputs(outputs):
     print("============== OUTPUTS ================")
-    for id,ser in outputs: 
+    for id,ser in outputs.items(): 
         print(f"\t--> {id} => {ser}")
 
     print("=======================================")
@@ -98,18 +102,23 @@ def list_connected_outputs(outputs):
 def set_stats(conns,deaths,injuries,damages,temp):
 
         if "injuries" in connections: 
+            print(f"[Data] Injuries: {injuries}")
             connections["injuries"].send_message('a',
-                                             str(mapint(0,3_000_000,int_or_0(injuries))))
-            connections["injuries"].send_message('b',
-                                               str(mapint(0,3_000_000,int_or_0(deaths))))  
+                                             f"0{mapint(0,500,int_or_0(injuries))}")
 
+        print(f"[Data] Damages: {damages}")
         if "bank" in connections: 
             connections["bank"].send_message('a',
-                                         str(mapint(0,10_000_000,int_or_0(damages))))
+                                             f"0{mapint(0,200_000,int_or_0(damages))}")
 
         if "ledscreen" in connections:
+            print(f"[Data] Temp: {temp}")
             connections["ledscreen"].send_message('a', f"{temp:4.1f}")
 
+        if "deaths" in connections:
+            print(f"[Data] Deaths: {deaths}")
+            connections["deaths"].send_message('a',
+                                               f"0{mapint(0,500,int_or_0(deaths))}")  
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -198,8 +207,8 @@ if __name__ == "__main__":
 
 
         elif in_disaster == "Drought":
-            if "drought" in connections:
-                connections["drought"].send_message('a',str(999)) 
+            if "injuries" in connections:
+                connections["injuries"].send_message('b',str(999)) 
 
             print("Drought")
             set_stats(connections,data[3],data[4],data[5],data[6])
@@ -208,13 +217,13 @@ if __name__ == "__main__":
             set_stats(connections,0,0,0,0)
             #time.sleep(5)
 
-            if "drought" in connections:
-                connections["drought"].send_message('a',str(0)) 
+            if "injuries" in connections:
+                connections["injuries"].send_message('b',str(0)) 
 
             play_disaster_news(in_disaster,in_decade,in_continent)
         
 
-        elif in_disaster == "Storm" and "fan" in connections:
+        elif in_disaster == "Storm":
             if "fan" in connections:
                 connections["fan"].send_message('a',str(999)) 
 
@@ -226,4 +235,15 @@ if __name__ == "__main__":
                 connections["fan"].send_message('a',str(0)) 
 
             play_disaster_news(in_disaster,in_decade,in_continent)
+        else:
+            print("[ERROR] No disaster")
+        
+        if "injuries" in connections:
+            connections["injuries"].send_message('b',"00") 
+        
+        if "fan" in connections:
+            connections["fan"].send_message('a',"00") 
+        
+        if "injuries" in connections:
+            connections["injuries"].send_message('b',"00") 
         

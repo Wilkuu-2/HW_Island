@@ -1,14 +1,14 @@
 #include <FastLED.h>
 #include <comm.h>
 #define LED_PIN_DEATHS 10
-#define NUM_LEDS_DEATHS 150
+#define NUM_LEDS_DEATHS 39
 
 
 
 #define ID "deaths"
 bool deaths_changed = false;
 int death_value = 0;
-bool indicator = qfalse;
+bool indicator = false;
 const int max_value = 255;
 const int min_value = 0;
 unsigned long start_time = 0;
@@ -29,7 +29,7 @@ void setup() {
   FastLED.addLeds<WS2812, LED_PIN_DEATHS, GRB>(deaths_leds, NUM_LEDS_DEATHS);
   pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(9600);
-  display_led(NUM_LEDS_DEATHS , deaths_leds, 255,0,0);
+  display_led(NUM_LEDS_DEATHS , deaths_leds, 0, 50, 0);
 
 }
 
@@ -47,8 +47,8 @@ void loop() {
     switch (m.label) {
       case 'a':
         death_value = atoi(m.content);
-        int brightness = map(death_value, 0, 1023, 0, 255);
-        display_led(NUM_LEDS_DEATHS, deaths_leds, 255,255 -brightness, 255 - brightness);
+        int brightness = map(min(death_value,1023-`), 0, 1023, 0, 50);
+        display_led(NUM_LEDS_DEATHS, deaths_leds, 200 + brightness, 50 - brightness, 50 - brightness);
         break;
 
       default:
@@ -60,7 +60,7 @@ void loop() {
   //display_led(NUM_LEDS_DEATHS, deaths_leds, 255,255 -brightness, 255 - brightness);
 
   //display_led(NUM_LEDS_DEATHS , deaths_leds, 255,0,0);
-  
+
   if (m.label != 0x0) {
     send_message(m);
   }

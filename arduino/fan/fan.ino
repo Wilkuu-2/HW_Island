@@ -24,7 +24,7 @@ void loop() {
       int start_fan = atoi(m.content);
       if (start_fan > 0){
         analogWrite(analogOutPin, startValue);
-        delay(5000);
+        //delay(5000);
         analogWrite(analogOutPin, stopValue);
       }
 

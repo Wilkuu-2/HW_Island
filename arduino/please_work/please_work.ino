@@ -1,7 +1,7 @@
 #include <comm.h>
 #include <FastLED.h>
-#define PIN_INJURIES 9
-#define DROUGHT_PIN 10
+#define PIN_INJURIES 10
+#define DROUGHT_PIN 9
 #define NUM_LEDS_INJURIES 105
 #define NUM_LEDS_DROUGHTS 14
 //#define DEBUG // Debug flag
@@ -10,6 +10,7 @@ int skipLights[] = {11, 12, 24, 25, 26, 38, 39, 51, 52, 53, 65, 66, 78, 79, 80};
 int injury_value = 0;
 bool blinkstate = 0;
 bool drought_changed = false;
+bool injuries_changed = false;
 int drought_value = 0;
 const int max_value = 255;
 const int min_value = 0;
@@ -54,7 +55,7 @@ void loop() {
       if (m.label == 'a') {
         injury_value = atoi(m.content);
         injury_index = int(map(injury_value, 0, 1023, 0, NUM_LEDS_INJURIES - 1)); // map the values 0-1023 to an index value to be used for certain number of LEDs
-        // Serial.println("Switch accessed-injury");
+        injuries_changed = true;// Serial.println("Switch accessed-injury");
       }
       if (m.label == 'b') {
         // Serial.println(m.label);
@@ -65,7 +66,7 @@ void loop() {
       }
       send_message(m);
     }
-    
+
   }
 
 
@@ -114,12 +115,22 @@ void loop() {
     FastLED.show();
   }
 
-  if (injury_index > 0) {                      //if there is a serial communication value input
+  if (injuries_changed) { //if there is a serial communication value input
     for (int i = 0; i <= injury_index; i++) {  // turn the number of LEDs equivalent to the number of injuries white
       // Serial.print("bro");
-      injuries_leds[i] = skip_check(i) ? CRGB(0, 0, 0) : CRGB(255, 255, 255);
+      injuries_leds[i] = CRGB(100, 100, 80);
+      if (skip_check(i)) {
+        injuries_leds[i] = CRGB(0, 0, 0);
+        //injury_index ++;
+      }
+
     }
-    injury_index = 0;
-    FastLED.show();
+    for (int i = injury_index + 1; i < NUM_LEDS_INJURIES; i++ ) {
+      injuries_leds[i] = CRGB(0, 0, 0);
+    }
+    injuries_changed = false;
   }
+  
+  FastLED.show();
+
 }

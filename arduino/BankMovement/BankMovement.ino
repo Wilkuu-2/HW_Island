@@ -2,12 +2,12 @@
 #include <Stepper.h>
 const int stepsPerRevolution = 200;  // change this to fit the number of steps per revolution
 
-int position = 0; 
+int position = 100; 
 bool blinkstate = 0;
 int inMessage;
 // for your motor
 // 21 on pinion, 24 gear 
-const int n_pinion = 21;
+const int n_pinion = 8;
 const int n_gear = 24;
 const int steps_range = n_pinion * stepsPerRevolution / n_gear;
 
@@ -33,7 +33,7 @@ void move_to(int pos){
 
 void setup() {
   // set the speed at 60 steps/sec:
-  myStepper.setSpeed(60);
+  myStepper.setSpeed(120);
   // initialize the serial port:
   Serial.begin(9600);
   pinMode(LED_BUILTIN, OUTPUT);
@@ -48,7 +48,7 @@ void loop() {
     // Respond to the handshakes 
     if(!handle_handshake(m,ID)){
       if (m.label = 'a'){
-        int pos = steps_range - int(map(atoi(m.content),0, 1024, 0, steps_range));
+        int pos = steps_range - int(map(atoi(m.content),0, 1023, 0, steps_range));
         move_to(pos);
       }
       
